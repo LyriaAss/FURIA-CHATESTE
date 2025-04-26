@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FURIA Esports - Chatbot</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #0a0a0a;
+            color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .chat-container {
+            width: 100%;
+            max-width: 500px;
+            height: 700px;
+            background-color: #121212;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        
+        .chat-header {
+            background-color: #111111;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #282828;
+        }
+        
+        .chat-header img {
+            height: 35px;
+            margin-right: 15px;
+        }
+        
+        .chat-header h1 {
+            color: #ffffff;
+            font-size: 20px;
+        }
+        
+        .chat-header .subtitle {
+            color: #5e5e5e;
+            font-size: 12px;
+            margin-top: 3px;
+        }
+        
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message {
+            margin-bottom: 20px;
+            max-width: 80%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            line-height: 1.4;
+            position: relative;
+            font-size: 15px;
+        }
+        
+        .bot-message {
+            background-color: #1e2025;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+        }
+        
+        .user-message {
+            background-color: #1a1a1a;
+            align-self: flex-end;
+            border-bottom-right-radius: 5px;
+            color: #ffffff;
+        }
+        
+        .message-time {
+            font-size: 11px;
+            color: #5e5e5e;
+            margin-top: 5px;
+            text-align: right;
+        }
+        
+        .bot-message .message-content {
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .bot-icon  {
+        width: 50px;
+        height: 40px;
+        margin-right: 10px;
+        border-radius: 50%;
+        background-color: transparent; /* Mantém o fundo transparente */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        }
+        
+        .bot-icon img  {
+        width: 90%;
+        height: 90%;
+        object-fit: contain;
+        }
+
+        .chat-input {
+            background-color: #1a1a1a;
+            padding: 15px;
+            display: flex;
+            border-top: 1px solid #282828;
+        }
+        
+        #user-input {
+            flex: 1;
+            background-color: #2a2a2a;
+            border: none;
+            padding: 12px 15px;
+            border-radius: 20px;
+            color: #f0f0f0;
+            font-size: 15px;
+            outline: none;
+        }
+        
+        #send-button {
+            background-color: #0d7377;
+            color: white;
+            border: none;
+            padding: 0 20px;
+            margin-left: 10px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        #send-button:hover {
+            background-color: #14ffec;
+            color: #1a1a1a;
+        }
+        
+        .highlight {
+            color: #14ffec;
+            font-weight: bold;
+        }
+        
+        .accent {
+            color: #0d7377;
+        }
+        
+        .bot-message-with-image {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .message-image {
+            max-width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+        
+        .quick-replies {
+            display: flex;
+            flex-wrap: wrap;
+            margin-top: 10px;
+            gap: 8px;
+        }
+        
+        .quick-reply {
+            background-color: #2a2a2a;
+            color: #14ffec;
+            border: 1px solid #0d7377;
+            border-radius: 15px;
+            padding: 8px 12px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-reply:hover {
+            background-color: #0d7377;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <img src="https://upload.wikimedia.org/wikipedia/pt/f/f9/Furia_Esports_logo.png" alt="FURIA Logo">
+            <div>
+                <h1>FURIA Botzera <span class="accent">BETA</span></h1>
+                <div class="subtitle">Seu companheiro da #DIADEFURIA</div>
+            </div>
+        </div>
+        
+        <div class="chat-messages" id="chat-messages">
+            <!-- Messages will be added here by JavaScript -->
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Digite sua mensagem..." autocomplete="off">
+            <button id="send-button">Enviar</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const chatMessages = document.getElementById('chat-messages');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            
+            // Predefined responses
+            const responses = {
+                greeting: [
+                    "E aí, torcedor da FURIA! Como posso te ajudar hoje? #DIADEFURIA",
+                    "Salve guerreiro! Pronto para mais um #DIADEFURIA?",
+                    "Olá! Que bom te ver por aqui! Como posso ajudar um verdadeiro fã da FURIA?"
+                ],
+                
+                roster: "O line-up atual da FURIA CS é: kscerato, yuurih, drop, KSCERATO e chelo, com o técnico guerri.",
+                
+                nextMatch: "O próximo jogo da FURIA será contra a Team Liquid na próxima quinta-feira, às 14h (horário de Brasília), pela ESL Pro League.",
+                
+                results: "No último jogo, a FURIA venceu a MIBR por 2-0 (16-12 na Mirage e 16-9 na Inferno).",
+                
+                about: "A FURIA Esports é uma organização brasileira fundada em 2017. Nosso time de CS se destaca como um dos melhores da América do Sul e já conquistou respeito mundial. #DIADEFURIA é mais que um slogan, é um estilo de vida para a nossa comunidade!",
+                
+                tournaments: "Atualmente, a FURIA está participando da ESL Pro League Season 19 e se preparando para o próximo Major.",
+                
+                social: "Siga a FURIA nas redes sociais:\nTwitter: @FURIA\nInstagram: @furiagg\nTwitch: /furiatv\nYouTube: FURIA",
+                
+                unknown: [
+                    "Não consegui entender, pode reformular? Como um verdadeiro fã da FURIA, estou aqui para te ajudar!",
+                    "Hmm, não peguei essa. Pode tentar de novo? #DIADEFURIA",
+                    "Desculpe, não entendi. Você pode perguntar sobre o line-up atual, próximos jogos, resultados recentes ou outros assuntos da FURIA."
+                ],
+                
+                hltv: "De acordo com o último ranking da HLTV, a FURIA está entre os top 10 times do mundo!",
+                
+                bestPlayers: "Kscerato e yuurih são considerados os destaques da equipe atualmente, com performances consistentes nos torneios internacionais.",
+                
+                history: "A FURIA se destacou no cenário mundial em 2019, quando alcançou o top 5 do ranking mundial. Desde então, tem sido uma força constante no CS mundial, representando o Brasil nos maiores torneios.",
+                
+                fan: [
+                    "AQUI É FURIA, PORRAAAA!!! #DIADEFURIA",
+                    "VAMO FURIA!!! Hoje é dia de vitória!",
+                    "A PANTERA NÃO TEME A LUTA! #DIADEFURIA"
+                ],
+                
+                merch: "Você pode comprar produtos oficiais da FURIA na loja online oficial: https://www.furia.gg/. Tem camisetas, moletons, mousepads e muito mais!"
+            };
+            
+            // Predefined quick replies
+            const quickReplies = [
+                "Line-up atual",
+                "Próximo jogo",
+                "Últimos resultados",
+                "Sobre a FURIA",
+                "Ranking HLTV",
+                "Produtos oficiais"
+            ];
+            
+            // Keywords for matching user input
+            const keywords = {
+                greeting: ["oi", "olá", "ola", "eae", "e aí", "salve", "bom dia", "boa tarde", "boa noite", "hello"],
+                roster: ["lineup", "line-up", "jogadores", "elenco", "time", "equipe", "quem joga", "escalação"],
+                nextMatch: ["próximo", "proximo", "jogo", "partida", "quando", "horário", "horario", "schedule"],
+                results: ["resultado", "últimos", "ultimos", "placar", "score", "venceu", "perdeu", "últimas partidas"],
+                about: ["sobre", "história", "historia", "info", "fundação", "fundacao", "quem é", "origem"],
+                tournaments: ["torneio", "campeonato", "competição", "competicao", "major", "esl", "blast"],
+                social: ["social", "redes", "instagram", "twitter", "twitch", "youtube", "seguir"],
+                hltv: ["ranking", "hltv", "posição", "posicao", "classificação", "classificacao", "top"],
+                bestPlayers: ["melhor", "melhores", "jogador", "destaque", "mvp", "craque", "ace"],
+                history: ["história", "historia", "trajetória", "trajetoria", "conquistas", "ganhou", "títulos", "titulos"],
+                fan: ["vamo", "vamos", "força", "forca", "torcer", "ganhar", "dia de furia", "diadefuria", "pantera"],
+                merch: ["loja", "comprar", "produtos", "camiseta", "camisa", "merchandising", "moletom", "mousepad"]
+            };
+            
+            // Initial bot message
+            setTimeout(() => {
+                addBotMessage("Eai! Sou o FURIA Fan Bot. Estou aqui para falar sobre nosso time de CS e tudo relacionado à FURIA! #DIADEFURIA");
+                
+                setTimeout(() => {
+                    addBotMessage("O que você gostaria de saber?", quickReplies);
+                }, 500);
+            }, 1000);
+            
+            // Event listeners
+            sendButton.addEventListener('click', handleUserMessage);
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleUserMessage();
+                }
+            });
+            
+            // Handle user message
+            function handleUserMessage() {
+                const message = userInput.value.trim();
+                if (message === '') return;
+                
+                addUserMessage(message);
+                userInput.value = '';
+                
+                // Simulate typing
+                setTimeout(() => {
+                    const response = getBotResponse(message.toLowerCase());
+                    addBotMessage(response);
+                    
+                    // Add quick replies after some responses
+                    if (!Array.isArray(response)) { // Don't add quick replies after fan messages
+                        setTimeout(() => {
+                            addBotMessage("Mais alguma coisa que posso te ajudar?", quickReplies);
+                        }, 800);
+                    }
+                }, 1000);
+            }
+            
+            // Get bot response based on user input
+            function getBotResponse(userMessage) {
+                // Check each keyword category
+                for (const [category, keywordList] of Object.entries(keywords)) {
+                    for (const keyword of keywordList) {
+                        if (userMessage.includes(keyword)) {
+                            // If it's a category with multiple responses, choose one randomly
+                            if (Array.isArray(responses[category])) {
+                                return responses[category][Math.floor(Math.random() * responses[category].length)];
+                            }
+                            return responses[category];
+                        }
+                    }
+                }
+                
+                // If no keyword match, return unknown response
+                return responses.unknown[Math.floor(Math.random() * responses.unknown.length)];
+            }
+            
+            // Add user message to chat
+            function addUserMessage(message) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message user-message';
+                messageElement.textContent = message;
+                
+                const timeElement = document.createElement('div');
+                timeElement.className = 'message-time';
+                timeElement.textContent = getCurrentTime();
+                messageElement.appendChild(timeElement);
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Add bot message to chat
+            function addBotMessage(message, quickReplyOptions = null) {
+                const messageElement = document.createElement('div');
+                messageElement.className = 'message bot-message';
+                
+                const contentElement = document.createElement('div');
+                contentElement.className = 'message-content';
+                
+                const iconElement = document.createElement('div');
+                iconElement.className = 'bot-icon';
+                const iconImg = document.createElement('img');
+                iconImg.src = "https://upload.wikimedia.org/wikipedia/pt/f/f9/Furia_Esports_logo.png";
+                iconImg.alt = "Bot";
+                iconElement.appendChild(iconImg);
+                
+                const textElement = document.createElement('div');
+                
+                // Check if message contains hashtag and highlight it
+                const formattedMessage = message.replace(/#DIADEFURIA/g, '<span class="highlight">#DIADEFURIA</span>');
+                textElement.innerHTML = formattedMessage;
+                
+                contentElement.appendChild(iconElement);
+                contentElement.appendChild(textElement);
+                messageElement.appendChild(contentElement);
+                
+                const timeElement = document.createElement('div');
+                timeElement.className = 'message-time';
+                timeElement.textContent = getCurrentTime();
+                messageElement.appendChild(timeElement);
+                
+                // Add quick replies if provided
+                if (quickReplyOptions) {
+                    const quickRepliesElement = document.createElement('div');
+                    quickRepliesElement.className = 'quick-replies';
+                    
+                    quickReplyOptions.forEach(option => {
+                        const quickReply = document.createElement('button');
+                        quickReply.className = 'quick-reply';
+                        quickReply.textContent = option;
+                        quickReply.addEventListener('click', () => {
+                            addUserMessage(option);
+                            
+                            setTimeout(() => {
+                                const response = getBotResponse(option.toLowerCase());
+                                addBotMessage(response);
+                                
+                                setTimeout(() => {
+                                    addBotMessage("Mais alguma coisa que posso te ajudar?", quickReplies);
+                                }, 800);
+                            }, 600);
+                        });
+                        
+                        quickRepliesElement.appendChild(quickReply);
+                    });
+                    
+                    messageElement.appendChild(quickRepliesElement);
+                }
+                
+                chatMessages.appendChild(messageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+            
+            // Get current time in HH:MM format
+            function getCurrentTime() {
+                const now = new Date();
+                let hours = now.getHours();
+                let minutes = now.getMinutes();
+                
+                hours = hours < 10 ? '0' + hours : hours;
+                minutes = minutes < 10 ? '0' + minutes : minutes;
+                
+                return `${hours}:${minutes}`;
+            }
+        });
+    </script>
+</body>
+</html>
