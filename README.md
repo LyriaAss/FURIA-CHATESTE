@@ -35,7 +35,7 @@ Clone o repositório:
 bash
 Copiar
 Editar
-git clone https://github.com/seu-usuario/furia-fan-bot.git
+git clone [https://github.com/seu-usuario/furia-fan-bot.git](https://github.com/LyriaAss/furia-botzera.io)
 Abra o arquivo index.html no seu navegador.
 
  ou abra diretamente pelo link : https://furiateste-io.vercel.app/
